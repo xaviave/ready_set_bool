@@ -1,49 +1,204 @@
-mod binary_tree as bt;
+mod parser;
+mod binary_tree;
 
-fn print_bit(mut n: u32) {
-    for _i in 0..8 {
-        print!("{}", n & 1);
-        n >>= 1;
-    }
-    println!();
+
+fn eval_formula(formula: &str) -> bool {
+	let p = parser::Parser::new(formula);
+	p.resolve()
 }
-
-// fn eval_formula(formula: &str) -> bool {
-
-// }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+	// AND TESTS
 	#[test]
-	fn test_eval_and() {
-		assert_eq!(eval_formula("10&"), 0);
+	fn eval_and_11() {
+		assert_eq!(eval_formula("11&"), true);
 	}
 
 	#[test]
-	fn test_eval_or() {
-        assert_eq!(eval_formula("10|"), 1);
+	fn eval_and_00() {
+		assert_eq!(eval_formula("00&"), false);
 	}
 
 	#[test]
-	fn test_eval_material_condition() {
-        assert_eq!(eval_formula("11>"), 1);
+	fn eval_and_01() {
+		assert_eq!(eval_formula("01&"), false);
+	}
+	
+	#[test]
+	fn eval_and_10() {
+		assert_eq!(eval_formula("10&"), false);
+	}
+
+	// OR TESTS
+	#[test]
+	fn eval_or_10() {
+        assert_eq!(eval_formula("10|"), true);
 	}
 
 	#[test]
-	fn test_eval_logical_equivalence() {
-        assert_eq!(eval_formula("10="), 0);
+	fn eval_or_01() {
+        assert_eq!(eval_formula("01|"), true);
 	}
 
+	#[test]
+	fn eval_or_11() {
+        assert_eq!(eval_formula("11|"), true);
+	}
+
+	#[test]
+	fn eval_or_00() {
+        assert_eq!(eval_formula("00|"), false);
+	}
+
+	// XOR TESTS
+	#[test]
+	fn eval_xor_10() {
+        assert_eq!(eval_formula("10^"), true);
+	}
+
+	#[test]
+	fn eval_xor_01() {
+        assert_eq!(eval_formula("01^"), true);
+	}
+
+	#[test]
+	fn eval_xor_11() {
+        assert_eq!(eval_formula("11^"), false);
+	}
+
+	#[test]
+	fn eval_xor_00() {
+        assert_eq!(eval_formula("00^"), false);
+	}
+
+	// NEG TESTS
+	#[test]
+	fn eval_neg_0() {
+        assert_eq!(eval_formula("0!"), true);
+	}
+
+	#[test]
+	fn eval_neg_1() {
+        assert_eq!(eval_formula("1!"), false);
+	}
+
+	// IMPLY TESTS
+	#[test]
+	fn eval_imply_00() {
+        assert_eq!(eval_formula("00>"), true);
+	}
+
+	#[test]
+	fn eval_imply_01() {
+        assert_eq!(eval_formula("01>"), true);
+	}
+
+	#[test]
+	fn eval_imply_10() {
+        assert_eq!(eval_formula("10>"), false);
+	}
+
+	#[test]
+	fn eval_imply_11() {
+        assert_eq!(eval_formula("11>"), true);
+	}
+
+	// EQUAL TESTS
+	#[test]
+	fn eval_equal_00() {
+        assert_eq!(eval_formula("00="), true);
+	}
+
+	#[test]
+	fn eval_equal_01() {
+        assert_eq!(eval_formula("01="), false);
+	}
+
+	#[test]
+	fn eval_equal_10() {
+        assert_eq!(eval_formula("10="), false);
+	}
+
+	#[test]
+	fn eval_equal_11() {
+        assert_eq!(eval_formula("11="), true);
+	}
+
+	// ADVANCED TESTS
     #[test]
-	fn test_eval_or_or_equal() {
-        assert_eq!(eval_formula("1011||="), 1);
+	fn eval_or_equal() {
+        assert_eq!(eval_formula("101|="), true);
+	}
+
+	#[test]
+	fn eval_or_or_equal() {
+        assert_eq!(eval_formula("1011||="), true);
+	}
+
+	#[test]
+	fn eval_or_and_equal() {
+        assert_eq!(eval_formula("10|11&="), true);
+	}
+	
+	#[test]
+	fn eval_and_and_and() {
+        assert_eq!(eval_formula("1011&&&"), false);
+	}
+
+	#[test]
+	fn eval_and_and_or() {
+        assert_eq!(eval_formula("10&11&|"), true);
+	}
+
+	// PARSING TESTS
+	#[test]
+	#[should_panic]
+	fn parsing_bad_char() {
+        assert_eq!(eval_formula("-"), true);
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_char1() {
+        assert_eq!(eval_formula("AB|"), true);
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_no_op() {
+        assert_eq!(eval_formula("10"), true);
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_no_v() {
+        assert_eq!(eval_formula("&&|"), true);
+	}
+	
+	#[test]
+	#[should_panic]
+	fn parsing_no_v1() {
+        assert_eq!(eval_formula("!"), true);
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_formula() {
+        assert_eq!(eval_formula("1!1!"), true);
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_formula1() {
+        assert_eq!(eval_formula("11|||"), true);
 	}
 }
 
 fn main() {
-    // https://www.geeksforgeeks.org/expression-tree
-    let b = bt::BinaryTree::new(imply_node(id_node(false), id_node(true)));
-    println!("{} = {}", bt::BinaryTree::collapse(&Box::new(b.head.expect("No head initialized"))), false);
+	let p = "1011||=";
+
+	println!("'{}' = {} | {}", p, eval_formula(p), true);
 }

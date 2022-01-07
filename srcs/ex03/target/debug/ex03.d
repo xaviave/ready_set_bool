@@ -1,1 +1,1 @@
-/Users/xamartin/ready_set_bool/srcs/ex03/target/debug/ex03: /Users/xamartin/ready_set_bool/srcs/ex03/src/main.rs
+/home/gmx/ready_set_bool/srcs/ex03/target/debug/ex03: /home/gmx/ready_set_bool/srcs/ex03/src/binary_tree.rs /home/gmx/ready_set_bool/srcs/ex03/src/main.rs /home/gmx/ready_set_bool/srcs/ex03/src/parser.rs
