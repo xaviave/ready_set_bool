@@ -31,32 +31,6 @@ impl BinaryTree<bool> {
         BinaryTree::<bool> { head: head }
     }
 
-    // pub fn collapse(node: &Box<BtNode<bool>>) -> bool {
-    //     let mut r: Option<bool> = None;
-    //     let mut l: Option<bool> = None;
-
-    //     if let Some(left) = &node.left {
-    //         l = Some(BinaryTree::collapse(left));
-    //     }
-
-    //     if let Some(right) = &node.right {
-    //         r = Some(BinaryTree::collapse(right));
-    //     }
-
-    //     let r = if let Some(x) = r { x } else { false };
-    //     let l = if let Some(x) = l { x } else { false };
-
-    //     match node.op {
-    //         Op::AndNode => { l & r }
-    //         Op::OrNode => { l | r }
-    //         Op::XorNode => { l ^ r }
-    //         Op::ImplyNode => { if l == true && r == false { false } else { true } }
-    //         Op::EqualNode => { l == r }
-    //         Op::NegNode => { !l }
-    //         Op::IdNode(x) => { x }
-    //     }
-    // }
-    
     pub fn collapse(node: &BtNode<bool>) -> bool {
         let mut r: Option<bool> = None;
         let mut l: Option<bool> = None;
@@ -74,10 +48,12 @@ impl BinaryTree<bool> {
 
         match node.op {
             Op::AndNode => { l & r }
-            Op::OrNode => { l | r }
+            // Op::OrNode => { l | r }
+            Op::OrNode => { println!("{} | {} = {}", l, r, l | r); l | r }
             Op::XorNode => { l ^ r }
             Op::ImplyNode => { if l == false || (l == true && r == true) { true } else { false } }
-            Op::EqualNode => { l == r }
+            Op::EqualNode => { println!("{} == {} = {}", l, r, l == r); l == r }
+            // Op::EqualNode => { l == r }
             Op::NegNode(x) => { !x }
             Op::IdNode(x) => { x }
         }

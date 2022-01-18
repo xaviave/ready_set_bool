@@ -11,6 +11,16 @@ fn eval_formula(formula: &str) -> bool {
 mod tests {
     use super::*;
 
+	#[test]
+	fn eval_no_op_0() {
+		assert_eq!(eval_formula("0"), false);
+	}
+
+	#[test]
+	fn eval_no_op_1() {
+		assert_eq!(eval_formula("1"), true);
+	}
+
 	// AND TESTS
 	#[test]
 	fn eval_and_11() {
@@ -198,7 +208,7 @@ mod tests {
 }
 
 fn main() {
-	let p = "1011||=";
+	let p = "1010||=";
 
 	println!("'{}' = {} | {}", p, eval_formula(p), true);
 }
