@@ -5,6 +5,21 @@ mod binary_tree;
 use itertools::join;
 use ::join_lazy_fmt::*;
 
+fn get_data_value(p: &parser::Parser, nu_sol: i32, a: i32) -> u32 {
+	let mut m: i32 = 1;
+	let mut data: u32 = 0;
+
+	print!("| ");
+	for &v in p.vars.iter().rev() {
+		let zz = nu_sol / m;
+		if a % zz < zz / 2 {
+			data += 1 << (v as u8 - 65);
+			print!("1 | ");
+		} else { print!("0 | "); }
+		m += m;
+	}
+	data
+}
 
 fn eval_formula(formula: &str) {
 	let p = parser::Parser::new(formula);
@@ -12,17 +27,7 @@ fn eval_formula(formula: &str) {
 	let nu_sol: i32 = p.vars.len().pow(2) as i32;
 	println!("| {} | = |\n|-{}-|", join(&p.vars, " | "), "-|-".join((0..(p.vars.len() + 1)).map(|_| "-")));
 	for a in 0..nu_sol {
-		let mut m: i32 = 1;
-		let mut data: u32 = 0;
-		print!("| ");
-		for &v in p.vars.iter().rev() {
-			let zz = nu_sol / m;
-			if a % zz < zz / 2 {
-				data += 1 << (v as u8 - 65);
-		        print!("1 | ");
-			} else { print!("0 | "); }
-			m += m;
-		}
+		let data: u32 = get_data_value(&p, nu_sol, a);
 		println!("{} |", if p.resolve(data) { 1 } else { 0 });
 	}
 }

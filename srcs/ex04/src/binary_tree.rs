@@ -52,7 +52,6 @@ impl BinaryTree<u8> {
             Op::And => { l & r }
             Op::Or => { l | r }
             Op::Xor => { l ^ r }
-            // Op::Imply => { !l || (l && r) }
             Op::Imply => { !l || r }
             Op::Equal => { l == r }
             Op::Neg => { !l }
