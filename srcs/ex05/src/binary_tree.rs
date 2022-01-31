@@ -33,6 +33,10 @@ impl BinaryTree<u8> {
         BinaryTree::<u8> { head }
     }
     
+    pub fn get_nnf(node: &BtNode<u8>) -> String {
+        format!("sheesh")
+    }
+
     pub fn collapse(node: &BtNode<u8>, data: u32) -> bool {
         let mut r: Option<bool> = None;
         let mut l: Option<bool> = None;
@@ -52,7 +56,7 @@ impl BinaryTree<u8> {
             Op::And => { l & r }
             Op::Or => { l | r }
             Op::Xor => { l ^ r }
-            Op::Neg => { !l } // check if l is negnode: l else nenode(l)
+            Op::Neg => { !l }
             Op::IdNode(x) => { bits::IntoBitHash::get_bit((data, x)) }
         }
     }
@@ -71,15 +75,18 @@ pub fn xor_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
 }
 
 pub fn imply_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::Or, neg_node(l), r)
+    BtNode::new(Op::Or, Some(negation_node(l, None)), r)
 }
 
 pub fn equal_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::And, imply_node(l, r), imply_node(r, l))
+    BtNode::new(Op::And, Some(imply_node(l, r)), Some(imply_node(r, l)))
 }
 
 pub fn negation_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::Neg, l, r)
+    match l.unwrap().op {
+        Op::Neg => { l.unwrap() }
+        _ => { BtNode::new(Op::Neg, l, r) }
+    }
 }
 
 pub fn id_node(value: u8) -> BtNode<u8> {

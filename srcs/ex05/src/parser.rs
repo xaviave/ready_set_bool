@@ -5,7 +5,7 @@ use crate::binary_tree;
 
 pub struct Parser {
     pub vars: Vec<char>,
-    bt: binary_tree::BinaryTree<u8>
+    pub bt: binary_tree::BinaryTree<u8>
 }
 
 impl Parser {
@@ -75,5 +75,9 @@ impl Parser {
 
     pub fn resolve(&self, data: u32) -> bool {
         binary_tree::BinaryTree::collapse(&self.bt.head, data)
+    }
+
+    pub fn get_nnf(&self) -> String {
+        binary_tree::BinaryTree::get_nnf(&self.bt.head)
     }
 } 

@@ -1,3 +1,4 @@
+mod bits;
 mod parser;
 mod binary_tree;
 
@@ -76,7 +77,7 @@ mod tests {
 }
 
 fn main() {
-	let formula = "A!!";
+	let formula = "A!";
 
-	negation_normal_form(p);
+	println!("reuslt: {}", negation_normal_form(formula));
 }
