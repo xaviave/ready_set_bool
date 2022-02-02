@@ -53,10 +53,7 @@ impl ParserA {
                     "|" => or_node(l, r),
                     "^" => xor_node(l, r),
                     ">" => imply_node(l, r),
-                    "=" => equal_node(
-                        Some(imply_node(l.clone(), r.clone())),
-                        Some(imply_node(r, l)),
-                    ),
+                    "=" => equal_node(l, r),
                     _ => panic!("Error operator {}\n", p),
                 }
             }

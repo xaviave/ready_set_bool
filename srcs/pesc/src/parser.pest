@@ -1,8 +1,0 @@
-var = { ASCII_ALPHA_UPPER }
-
-neg = { "!" }
-// allow operator counting w/o the negation
-operator = { ("|" | "^" | "&" | ">" | "=") }
-operators = { neg | operator }
-
-formula = { SOI ~ !operator ~ (var ~ operators*)+ ~ EOI }

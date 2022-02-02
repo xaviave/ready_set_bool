@@ -5,7 +5,6 @@ use std::str;
 pub enum Op<T> {
     And,
     Or,
-    Xor,
     IdNode(T),
 }
 
@@ -58,12 +57,11 @@ impl BinaryTree<u8> {
         let tmp = match node.op {
             Op::And => l & r,
             Op::Or => l | r,
-            Op::Xor => l ^ r,
-            Op::IdNode(x) => bits::IntoBitHash::get_bit((data, x))
+            Op::IdNode(x) => bits::IntoBitHash::get_bit((data, x)),
         };
         match node.neg {
             true => !tmp,
-            false => tmp
+            false => tmp,
         }
     }
 }
@@ -77,7 +75,12 @@ pub fn or_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
 }
 
 pub fn xor_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::Xor, l, r, false)
+    BtNode::new(
+        Op::Or,
+        Some(and_node(l.clone(), Some(negation_node(r.clone())))),
+        Some(and_node(Some(negation_node(l.clone())), r.clone())),
+        false,
+    )
 }
 
 pub fn imply_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
@@ -85,7 +88,12 @@ pub fn imply_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
 }
 
 pub fn equal_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::And, l, r, false)
+    BtNode::new(
+        Op::And,
+        Some(imply_node(l.clone(), r.clone())),
+        Some(imply_node(r, l)),
+        false,
+    )
 }
 
 pub fn negation_node(node: Option<BtNode<u8>>) -> BtNode<u8> {
