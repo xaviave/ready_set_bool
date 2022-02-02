@@ -1,83 +1,101 @@
-use regex::Regex;
 use itertools::Itertools;
+use regex::Regex;
 
-use crate::binary_tree;
+extern crate pest;
 
-pub struct Parser {
+use pest::Parser;
+#[derive(Parser)]
+#[grammar = "parser.pest"]
+pub struct FormulaParser;
+
+use crate::binary_tree::{
+    and_node, equal_node, id_node, imply_node, negation_node, or_node, xor_node, BinaryTree, BtNode,
+};
+
+pub struct ParserA {
     pub vars: Vec<char>,
-    pub bt: binary_tree::BinaryTree<u8>
+    pub bt: BinaryTree<u8>,
 }
 
-impl Parser {
+impl ParserA {
     fn check_str(raw_str: &str) -> bool {
         let re_bad_char = Regex::new(r"[^A-Z|&=!<>^]").unwrap();
         re_bad_char.find(raw_str) == None
     }
 
     fn get_all_vars(raw_str: &str) -> Vec<char> {
-        let mut unique_vars = raw_str.chars().filter(|x| x.is_ascii_uppercase()).sorted().collect::<Vec<char>>();
+        let mut unique_vars = raw_str
+            .chars()
+            .filter(|x| x.is_ascii_uppercase())
+            .sorted()
+            .collect::<Vec<char>>();
         unique_vars.dedup();
         unique_vars
     }
 
-    fn parse_raw(raw_str: &str) -> binary_tree::BinaryTree<u8> {
-        let mut stack = Vec::new();
-        let re = Regex::new(r"(?P<v>[A-Z])|(?P<op>[|&=!>^])").unwrap();
-        let caps = re.captures_iter(raw_str);
+    fn get_operator_node(
+        pair: pest::iterators::Pair<Rule>,
+        stack: &mut Vec<BtNode<u8>>,
+    ) -> BtNode<u8> {
+        let p = pair.into_inner().next().unwrap();
+        // https://stackoverflow.com/questions/47618823/cannot-borrow-as-mutable-because-it-is-also-borrowed-as-immutable
+        match p.as_rule() {
+            Rule::neg => negation_node(stack.pop()),
+            Rule::operator => {
+                if stack.len() < 2 {
+                    panic!("Error too many operator");
+                }
+                let r: Option<BtNode<u8>> = stack.pop();
+                let l: Option<BtNode<u8>> = stack.pop();
 
-        for cap in caps {
-            let group_name = {
-                if cap.name("v") != None { "v" }
-                else if cap.name("op") != None { "op" }
-                else { "not defined" }
-            };
-            
-            let tmp = match group_name {
-                "v" => binary_tree::id_node(cap.name("v").map_or(u8::MAX, |m| m.as_str().as_bytes()[0] - 65)),
-                "op" => {
-                    assert!(!stack.is_empty());
-                    let op = cap.name("op").map_or("", |m| m.as_str());
+                match p.as_str() {
+                    "&" => and_node(l, r),
+                    "|" => or_node(l, r),
+                    "^" => xor_node(l, r),
+                    ">" => imply_node(l, r),
+                    "=" => equal_node(
+                        Some(imply_node(l.clone(), r.clone())),
+                        Some(imply_node(r, l)),
+                    ),
+                    _ => panic!("Error operator {}\n", p),
+                }
+            }
+            _ => panic!("Error operator {}\n", p),
+        }
+    }
 
-                    let r: Option<binary_tree::BtNode<u8>> = stack.pop();
-                    let l: Option<binary_tree::BtNode<u8>> = {
-                        if op != "!" { stack.pop() }
-                        else { None }
-                    };
+    fn parse_raw(raw_str: &str) -> BinaryTree<u8> {
+        println!("formula = {raw_str:}");
+        let mut stack = Vec::<BtNode<u8>>::new();
+        let pairs = FormulaParser::parse(Rule::formula, raw_str)
+            .unwrap_or_else(|e| panic!("Error during parsing: {:?}", e));
 
-                    if op != "!" && l.is_none() {
-                        panic!("Missing variable after operator: '{}'", op);
-                    }
-
-                    match op {
-                        "&" => { binary_tree::and_node(l, r) }
-                        "|" => { binary_tree::or_node(l, r) }
-                        "^" => { binary_tree::xor_node(l, r) }
-                        "!" => { binary_tree::negation_node(r, None) }
-                        ">" => { binary_tree::imply_node(l, r) }
-                        "=" => { binary_tree::equal_node(l, r) }
-                        _ => panic!("Error operator {}\n", op)
-                    }
-                },
-                _ => panic!("Error regex group {}\n", group_name),
-            };
-            stack.push(tmp);
+        for pair in pairs {
+            for inner_pair in pair.into_inner() {
+                let tmp = match inner_pair.as_rule() {
+                    Rule::var => id_node(inner_pair.as_str().as_bytes()[0] - 65),
+                    Rule::operators => ParserA::get_operator_node(inner_pair, &mut stack),
+                    Rule::EOI => break,
+                    _ => panic!("Error token not accepted: {:#?}", inner_pair),
+                };
+                stack.push(tmp);
+            }
         }
         assert!(stack.len() == 1);
-        binary_tree::BinaryTree::new(stack.pop().unwrap())
+        BinaryTree::new(stack.pop().unwrap())
     }
-    
+
     pub fn new(raw_str: &str) -> Self {
-        if !Parser::check_str(raw_str) {
+        if !ParserA::check_str(raw_str) {
             panic!("Bad char found or typing error in formula");
         }
-        Parser { vars: {Parser::get_all_vars(raw_str)}, bt: Parser::parse_raw(raw_str) }
+        ParserA {
+            vars: { ParserA::get_all_vars(raw_str) },
+            bt: ParserA::parse_raw(raw_str),
+        }
     }
 
     pub fn resolve(&self, data: u32) -> bool {
-        binary_tree::BinaryTree::collapse(&self.bt.head, data)
+        BinaryTree::collapse(&self.bt.head, data)
     }
-
-    pub fn get_nnf(&self) -> String {
-        binary_tree::BinaryTree::get_nnf(&self.bt.head)
-    }
-} 
+}
