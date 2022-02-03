@@ -5,19 +5,25 @@ mod binary_tree;
 #[macro_use]
 extern crate pest_derive;
 
+fn negation_normal_form(formula: &str) -> String {
+	// miss distributivity and neg at the end
+	let p = parser::ParserA::new(formula);
+	p.get_nnf()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
 	#[test]
-	fn eval_no_op_0() {
+	fn eval_resolve_no_op_0() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("Z");
 		assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_no_op_1() {
+	fn eval_resolve_no_op_1() {
 		let data: u32 = 0b10000000000000000000000000u32;
 		let p = parser::ParserA::new("Z");
 		assert_eq!(p.resolve(data), true);
@@ -25,28 +31,28 @@ mod tests {
 
 	// AND TESTS
 	#[test]
-	fn eval_and_ab_00() {
+	fn eval_resolve_and_ab_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB&");
 		assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_and_ab_01() {
+	fn eval_resolve_and_ab_01() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AB&");
 		assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_and_ab_10() {
+	fn eval_resolve_and_ab_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB&");
 		assert_eq!(p.resolve(data), false);
 	}
 	
 	#[test]
-	fn eval_and_ab_11() {
+	fn eval_resolve_and_ab_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB&");
 		assert_eq!(p.resolve(data), true);
@@ -54,28 +60,28 @@ mod tests {
 
 	// OR TESTS
 	#[test]
-	fn eval_or_ab_00() {
+	fn eval_resolve_or_ab_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB|");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_or_ab_01() {
+	fn eval_resolve_or_ab_01() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AB|");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_or_ab_10() {
+	fn eval_resolve_or_ab_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB|");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_or_ab_11() {
+	fn eval_resolve_or_ab_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB|");
         assert_eq!(p.resolve(data), true);
@@ -83,28 +89,28 @@ mod tests {
 
 	// XOR TESTS
 	#[test]
-	fn eval_xor_ab_00() {
+	fn eval_resolve_xor_ab_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB^");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_xor_ab_01() {
+	fn eval_resolve_xor_ab_01() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AB^");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_xor_ab_10() {
+	fn eval_resolve_xor_ab_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB^");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_xor_ab_11() {
+	fn eval_resolve_xor_ab_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB^");
         assert_eq!(p.resolve(data), false);
@@ -112,43 +118,57 @@ mod tests {
 
 	// NEG TESTS
 	#[test]
-	fn eval_neg_0() {
+	fn eval_resolve_neg_0() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("T!");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_neg_1() {
+	fn eval_resolve_neg_1() {
 		let data: u32 = 0b10000000000000000000000000u32;
 		let p = parser::ParserA::new("Z!");
         assert_eq!(p.resolve(data), false);
 	}
 
+	#[test]
+	fn eval_resolve_double_neg_0() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("T!!");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_double_neg_1() {
+		let data: u32 = 1;
+		let p = parser::ParserA::new("A!!");
+        assert_eq!(p.resolve(data), true);
+	}
+
 	// IMPLY TESTS
 	#[test]
-	fn eval_imply_ab_00() {
+	fn eval_resolve_imply_ab_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB>");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_imply_ab_01() {
+	fn eval_resolve_imply_ab_01() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AB>");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_imply_ab_10() {
+	fn eval_resolve_imply_ab_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB>");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_imply_ab_11() {
+	fn eval_resolve_imply_ab_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB>");
         assert_eq!(p.resolve(data), true);
@@ -156,28 +176,28 @@ mod tests {
 
 	// EQUAL TESTS
 	#[test]
-	fn eval_equal_ab_00() {
+	fn eval_resolve_equal_ab_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB=");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_equal_ab_01() {
+	fn eval_resolve_equal_ab_01() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AB=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_equal_ab_10() {
+	fn eval_resolve_equal_ab_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_equal_ab_11() {
+	fn eval_resolve_equal_ab_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB=");
         assert_eq!(p.resolve(data), true);
@@ -185,105 +205,161 @@ mod tests {
 
 	// ADVANCED TESTS
     #[test]
-	fn eval_or_equal_000() {
+	fn eval_resolve_or_neg_00() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("AB|!");
+        assert_eq!(p.resolve(data), true);
+	}
+	
+    #[test]
+	fn eval_resolve_or_neg_01() {
+		let data: u32 = 1;
+		let p = parser::ParserA::new("AB|!");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+    #[test]
+	fn eval_resolve_or_neg_10() {
+		let data: u32 = 0b10u32;
+		let p = parser::ParserA::new("AB|!");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+    #[test]
+	fn eval_resolve_or_neg_11() {
+		let data: u32 = 0b11u32;
+		let p = parser::ParserA::new("AB|!");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+    #[test]
+	fn eval_resolve_and_neg_00() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("AB&!");
+        assert_eq!(p.resolve(data), true);
+	}
+	
+    #[test]
+	fn eval_resolve_and_neg_01() {
+		let data: u32 = 1;
+		let p = parser::ParserA::new("AB&!");
+        assert_eq!(p.resolve(data), true);
+	}
+	
+    #[test]
+	fn eval_resolve_and_neg_10() {
+		let data: u32 = 0b10u32;
+		let p = parser::ParserA::new("AB&!");
+        assert_eq!(p.resolve(data), true);
+	}
+	
+    #[test]
+	fn eval_resolve_and_neg_11() {
+		let data: u32 = 0b11u32;
+		let p = parser::ParserA::new("AB&!");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+    #[test]
+	fn eval_resolve_or_equal_000() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("ABC|=");
         assert_eq!(p.resolve(data), true);
 	}
 	
     #[test]
-	fn eval_or_equal_001() {
+	fn eval_resolve_or_equal_001() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("ABC|=");
         assert_eq!(p.resolve(data), false);
 	}
 	
     #[test]
-	fn eval_or_equal_101() {
+	fn eval_resolve_or_equal_101() {
 		let data: u32 = 0b101u32;
 		let p = parser::ParserA::new("ABC|=");
         assert_eq!(p.resolve(data), true);
 	}
 	
 	#[test]
-	fn eval_or_or_equal_0000() {
+	fn eval_resolve_or_or_equal_0000() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("ABCD||=");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_or_or_equal_1010() {
+	fn eval_resolve_or_or_equal_1010() {
 		let data: u32 = 0b1010u32;
 		let p = parser::ParserA::new("ABCD||=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_or_or_equal_1100() {
+	fn eval_resolve_or_or_equal_1100() {
 		let data: u32 = 0b1100u32;
 		let p = parser::ParserA::new("ABCD||=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_or_and_equal_00() {
+	fn eval_resolve_or_and_equal_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB|AB&=");
         assert_eq!(p.resolve(data), true);
 	}
 	
 	#[test]
-	fn eval_or_and_equal_10() {
+	fn eval_resolve_or_and_equal_10() {
 		let data: u32 = 0b10u32;
 		let p = parser::ParserA::new("AB|AB&=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_or_and_equal_1010() {
+	fn eval_resolve_or_and_equal_1010() {
 		let data: u32 = 0b1010u32;
 		let p = parser::ParserA::new("AB|CD&=");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_or_and_equal_1011() {
+	fn eval_resolve_or_and_equal_1011() {
 		let data: u32 = 0b1011u32;
 		let p = parser::ParserA::new("CD|AB&=");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_and_and_and_0000() {
+	fn eval_resolve_and_and_and_0000() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("ABCD&&&");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_and_and_and_1() {
+	fn eval_resolve_and_and_and_1() {
 		let data: u32 = 1;
 		let p = parser::ParserA::new("AAAA&&&");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_and_and_and_1101() {
+	fn eval_resolve_and_and_and_1101() {
 		let data: u32 = 0b1101u32;
 		let p = parser::ParserA::new("ABCD&&&");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_and_and_or_00() {
+	fn eval_resolve_and_and_or_00() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB&AZ&|");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_and_and_or_11() {
+	fn eval_resolve_and_and_or_11() {
 		let data: u32 = 0b11u32;
 		let p = parser::ParserA::new("AB&AB&|");
         assert_eq!(p.resolve(data), true);
@@ -331,20 +407,8 @@ mod tests {
 	fn parsing_bad_formula1() {
 		let _p = parser::ParserA::new("AB|||");
 	}
-}
 
-fn negation_normal_form(formula: &str) -> String {
-	// miss distributivity and neg at the end
-	let p = parser::ParserA::new(formula);
-	// p.bt.get_nnf()
-	String::from("Oui")
-}
-
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-
+	// NNF FORM
 	#[test]
 	fn eval_no_op() {
 		assert_eq!(negation_normal_form("A"), "A");
@@ -363,6 +427,11 @@ mod tests {
 	#[test]
 	fn eval_double_neg() {
 		assert_eq!(negation_normal_form("A!!"), "A");
+	}
+
+	#[test]
+	fn eval_triple_neg() {
+		assert_eq!(negation_normal_form("A!!!"), "A!");
 	}
 
 	#[test]
@@ -399,16 +468,15 @@ mod tests {
 	fn eval_distributy_2() {
 		assert_eq!(negation_normal_form("AB|C&!"), "A!B!&C!|");
 	}
-
-	// #[test]
-	// #[should_panic]
-	// fn parsing_bad_formula1() {
-	// 	let _p = parser::ParserA::new("AB|||");
-	// }
 }
-*/
-fn main() {
-	let formula = "ABC|=";
 
-	println!("reuslt: {}", negation_normal_form(formula));
+fn main() {
+	let formula = "AB>";
+	println!("result: {}\n", negation_normal_form(formula));
+
+	let formula = "BA>";
+	println!("result: {}\n", negation_normal_form(formula));
+	
+	let formula = "AB=";
+	println!("result: {}\n", negation_normal_form(formula));
 }
