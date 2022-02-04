@@ -453,21 +453,6 @@ mod tests {
 	fn eval_equal() {
 		assert_eq!(negation_normal_form("AB="), "AB&A!B!&|");
 	}
-
-	#[test]
-	fn eval_distributy_0() {
-		assert_eq!(negation_normal_form("AB|C&"), "CA&CB&|");
-	}
-
-	#[test]
-	fn eval_distributy_1() {
-		assert_eq!(negation_normal_form("AB&C|"), "CA|CB|&");
-	}
-
-	#[test]
-	fn eval_distributy_2() {
-		assert_eq!(negation_normal_form("AB|C&!"), "A!B!&C!|");
-	}
 }
 
 fn main() {

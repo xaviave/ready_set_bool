@@ -365,6 +365,55 @@ mod tests {
         assert_eq!(p.resolve(data), true);
 	}
 
+	#[test]
+	fn eval_resolve_distributy_or_and_000() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("AB|C&");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_or_and_010() {
+		let data: u32 = 0b010u32;
+		let p = parser::ParserA::new("AB|C&");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_or_and_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("AB|C&");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_and_or_000() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("AB&C|");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_and_or_010() {
+		let data: u32 = 0b010u32;
+		let p = parser::ParserA::new("AB&C|");
+        assert_eq!(p.resolve(data), false);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_and_or_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("AB&C|");
+        assert_eq!(p.resolve(data), true);
+	}
+
+	#[test]
+	fn eval_resolve_distributy_and_or_neg_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("AB|C&!");
+        assert_eq!(p.resolve(data), true);
+	}
+
 	// PARSING TESTS
 	#[test]
 	#[should_panic]
@@ -454,6 +503,7 @@ mod tests {
 		assert_eq!(negation_normal_form("AB="), "AB&A!B!&|");
 	}
 
+	// CNF FORM
 	#[test]
 	fn eval_distributy_0() {
 		assert_eq!(negation_normal_form("AB|C&"), "CA&CB&|");

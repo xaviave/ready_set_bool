@@ -82,12 +82,34 @@ impl BinaryTree<u8> {
     }
 }
 
+fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>) -> bool {
+    if let Some(n) = left {
+        match n.op {
+            Op::IdNode<T> => false,
+            _ => { op != n.op }
+        }
+    } else {
+        panic!("Negation can't be applied to a Null node")
+    }
+}
+
 pub fn and_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::And, l, r, false)
+    let d1 = check_distributivity(Op::And, l);
+    let d2 = check_distributivity(Op::And, r);
+
+    if d1 ^ d2 {
+        if let Some(n) = left {
+            BtNode::new(Op::And, l, r, false)
+        }
+        BtNode::new(Op::And, l, r, false)
+    } else {
+        BtNode::new(Op::And, l, r, false)
+    }
 }
 
 pub fn or_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::Or, l, r, false)
+    check_distributivity(Op::Or, l, r)
+    // BtNode::new(Op::Or, l, r, false)
 }
 
 pub fn xor_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
