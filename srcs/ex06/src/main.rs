@@ -5,10 +5,10 @@ mod binary_tree;
 #[macro_use]
 extern crate pest_derive;
 
-fn negation_normal_form(formula: &str) -> String {
+fn conjunctive_normal_form(formula: &str) -> String {
 	// miss distributivity and neg at the end
 	let p = parser::ParserA::new(formula);
-	p.get_nnf()
+	p.get_cnf()
 }
 
 #[cfg(test)]
@@ -460,73 +460,86 @@ mod tests {
 	// NNF FORM
 	#[test]
 	fn eval_no_op() {
-		assert_eq!(negation_normal_form("A"), "A");
+		assert_eq!(conjunctive_normal_form("A"), "A");
 	}
 
 	#[test]
 	fn eval_and() {
-		assert_eq!(negation_normal_form("AB&"), "AB&");
+		assert_eq!(conjunctive_normal_form("AB&"), "AB&");
 	}
 
 	#[test]
 	fn eval_or() {
-		assert_eq!(negation_normal_form("AB|"), "AB|");
+		assert_eq!(conjunctive_normal_form("AB|"), "AB|");
 	}
 
 	#[test]
 	fn eval_double_neg() {
-		assert_eq!(negation_normal_form("A!!"), "A");
+		assert_eq!(conjunctive_normal_form("A!!"), "A");
 	}
 
 	#[test]
 	fn eval_triple_neg() {
-		assert_eq!(negation_normal_form("A!!!"), "A!");
+		assert_eq!(conjunctive_normal_form("A!!!"), "A!");
 	}
 
 	#[test]
 	fn eval_de_morgan_0() {
-		assert_eq!(negation_normal_form("AB|!"), "A!B!&");
+		assert_eq!(conjunctive_normal_form("AB|!"), "A!B!&");
 	}
 	
 	#[test]
 	fn eval_de_morgan_1() {
-		assert_eq!(negation_normal_form("AB&!"), "A!B!|");
+		assert_eq!(conjunctive_normal_form("AB&!"), "A!B!|");
 	}
 
 	#[test]
 	fn eval_imply() {
-		assert_eq!(negation_normal_form("AB>"), "A!B|");
+		assert_eq!(conjunctive_normal_form("AB>"), "A!B|");
 	}
 
 	#[test]
 	fn eval_equal() {
-		assert_eq!(negation_normal_form("AB="), "AB&A!B!&|");
+		assert_eq!(conjunctive_normal_form("AB="), "AB&A!B!&|");
 	}
 
 	// CNF FORM
 	#[test]
 	fn eval_distributy_0() {
-		assert_eq!(negation_normal_form("AB|C&"), "CA&CB&|");
+		assert_eq!(conjunctive_normal_form("AB|C&"), "CA&CB&|");
 	}
 
 	#[test]
 	fn eval_distributy_1() {
-		assert_eq!(negation_normal_form("AB&C|"), "CA|CB|&");
+		assert_eq!(conjunctive_normal_form("AB&C|"), "CA|CB|&");
 	}
 
 	#[test]
 	fn eval_distributy_2() {
-		assert_eq!(negation_normal_form("AB|C&!"), "A!B!&C!|");
+		assert_eq!(conjunctive_normal_form("AB|C&!"), "A!B!&C!|");
+	}
+
+	#[test]
+	fn eval_or_or_or() {
+		assert_eq!(conjunctive_normal_form("AB|C|D|"), "ABCD|||");
+	}
+
+	#[test]
+	fn eval_and_and_and() {
+		assert_eq!(conjunctive_normal_form("AB&C&D&"), "ABCD&&&");
+	}
+
+	#[test]
+	fn eval_and_neg_neg_or() {
+		assert_eq!(conjunctive_normal_form("AB&!C!|"), "A!B!C!||");
+	}
+	#[test]
+	fn eval_or_neg_neg_and() {
+		assert_eq!(conjunctive_normal_form("AB|!C!&"), "A!B!C!&&");
 	}
 }
 
 fn main() {
 	let formula = "AB>";
-	println!("result: {}\n", negation_normal_form(formula));
-
-	let formula = "BA>";
-	println!("result: {}\n", negation_normal_form(formula));
-	
-	let formula = "AB=";
-	println!("result: {}\n", negation_normal_form(formula));
+	println!("result: {}\n", conjunctive_normal_form(formula));
 }

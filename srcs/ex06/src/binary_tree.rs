@@ -1,13 +1,13 @@
 use crate::bits;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Op<T> {
     And,
     Or,
     IdNode(T),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BtNode<T> {
     op: Op<T>,
     neg: bool,
@@ -20,6 +20,19 @@ pub struct BinaryTree<T> {
 }
 
 impl BtNode<u8> {
+    fn get_right_node(&self) -> Option<BtNode<u8>> {
+        match self.op {
+            Op::And | Op::Or => Some(*(self.right.clone().unwrap())),
+            _ => Some(self.clone()),
+        }
+    }
+    fn get_left_node(&self) -> Option<BtNode<u8>> {
+        match self.op {
+            Op::And | Op::Or => Some(*(self.right.clone().unwrap())),
+            _ => Some(self.clone()),
+        }
+    }
+
     pub fn new(op: Op<u8>, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>, neg: bool) -> Self {
         BtNode::<u8> {
             op,
@@ -82,34 +95,55 @@ impl BinaryTree<u8> {
     }
 }
 
-fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>) -> bool {
-    if let Some(n) = left {
+fn check_distributivity(op: Op<u8>, node: Option<BtNode<u8>>) -> bool {
+    if let Some(n) = node {
         match n.op {
-            Op::IdNode<T> => false,
-            _ => { op != n.op }
+            Op::IdNode(T) => false,
+            _ => op != n.op,
         }
     } else {
-        panic!("Negation can't be applied to a Null node")
+        panic!("Null node")
     }
 }
 
 pub fn and_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    let d1 = check_distributivity(Op::And, l);
-    let d2 = check_distributivity(Op::And, r);
+    // let d1 = check_distributivity(Op::And, l.clone());
+    // let d2 = check_distributivity(Op::And, r.clone());
 
-    if d1 ^ d2 {
-        if let Some(n) = left {
-            BtNode::new(Op::And, l, r, false)
-        }
-        BtNode::new(Op::And, l, r, false)
-    } else {
-        BtNode::new(Op::And, l, r, false)
-    }
+    BtNode::new(Op::And, l, r, false)
+
+    // if d1 && !d2 {
+    //     if let Some(n) = r {
+    //         println!("right = {n:?}");
+    //         BtNode::new(
+    //             Op::Or,
+    //             Some(BtNode::new(Op::And, l.clone(), n.get_left_node(), false)),
+    //             Some(BtNode::new(Op::And, l, n.get_right_node(), false)),
+    //             false,
+    //         )
+    //     } else {
+    //         panic!("")
+    //     }
+    // } else if d2 && !d1 {
+    //     if let Some(n) = l {
+    //         println!("left = {n:?}");
+    //         BtNode::new(
+    //             Op::Or,
+    //             Some(BtNode::new(Op::And, r.clone(), n.get_left_node(), false)),
+    //             Some(BtNode::new(Op::And, r, n.get_left_node(), false)),
+    //             false,
+    //         )
+    //     } else {
+    //         panic!("")
+    //     }
+    // } else {
+    //     BtNode::new(Op::And, l, r, false)
+    // }
 }
 
 pub fn or_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    check_distributivity(Op::Or, l, r)
-    // BtNode::new(Op::Or, l, r, false)
+    // check_distributivity(Op::Or, l, r)
+    BtNode::new(Op::Or, l, r, false)
 }
 
 pub fn xor_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
@@ -130,7 +164,10 @@ pub fn equal_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
     BtNode::new(
         Op::Or,
         Some(and_node(l.clone(), r.clone())),
-        Some(and_node(Some(negation_node(l.clone())), Some(negation_node(r.clone())))),
+        Some(and_node(
+            Some(negation_node(l.clone())),
+            Some(negation_node(r.clone())),
+        )),
         false,
     )
 }
@@ -139,7 +176,11 @@ pub fn negation_node(node: Option<BtNode<u8>>) -> BtNode<u8> {
     if let Some(n) = node {
         if !n.neg == true && (n.op == Op::And || n.op == Op::Or) {
             BtNode::new(
-                match n.op {Op::And => Op::Or, Op::Or => Op::And, _ => n.op},
+                match n.op {
+                    Op::And => Op::Or,
+                    Op::Or => Op::And,
+                    _ => n.op,
+                },
                 Some(negation_node(Some(*(n.left.unwrap())))),
                 Some(negation_node(Some(*(n.right.unwrap())))),
                 n.neg,

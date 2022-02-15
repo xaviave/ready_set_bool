@@ -93,10 +93,15 @@ impl ParserA {
     }
 
     pub fn resolve(&self, data: u32) -> bool {
+        println!("resolve: {:?}", self.bt.head);
         BinaryTree::collapse(&self.bt.head, data)
     }
 
     pub fn get_nnf(&self) -> String {
+        BinaryTree::collapse_printer(&self.bt.head)
+    }
+
+    pub fn get_cnf(&self) -> String {
         BinaryTree::collapse_printer(&self.bt.head)
     }
 }
