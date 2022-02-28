@@ -366,97 +366,103 @@ mod tests {
 	}
 
 	#[test]
-	fn eval_resolve_distributy_or_and_000() {
+	fn eval_resolve_distributivity_or_and_000() {
 		let data: u32 = 0;
 		let p = parser::ParserA::new("AB|C&");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_resolve_distributy_or_and_010() {
+	fn eval_resolve_distributivity_or_and_010() {
 		let data: u32 = 0b010u32;
 		let p = parser::ParserA::new("AB|C&");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_resolve_distributy_or_and_011() {
+	fn eval_resolve_distributivity_or_and_011() {
 		let data: u32 = 0b011u32;
 		let p = parser::ParserA::new("AB|C&");
         assert_eq!(p.resolve(data), false);
 	}
-
+	
 	#[test]
-	fn eval_resolve_distributy_and_or_000() {
-		let data: u32 = 0;
-		let p = parser::ParserA::new("AB&C|");
+	fn eval_resolve_distributivity_cnf_or_and_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("CA&CB&|");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_resolve_distributy_and_or_010() {
+	fn eval_resolve_distributivity_and_or_000() {
+		let data: u32 = 0;
+		let p = parser::ParserA::new("AB&C|");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+	#[test]
+	fn eval_resolve_distributivity_and_or_010() {
 		let data: u32 = 0b010u32;
 		let p = parser::ParserA::new("AB&C|");
         assert_eq!(p.resolve(data), false);
 	}
 
 	#[test]
-	fn eval_resolve_distributy_and_or_011() {
+	fn eval_resolve_distributivity_cnf_and_or_010() {
+		let data: u32 = 0b010u32;
+		let p = parser::ParserA::new("CA|CB|&");
+        assert_eq!(p.resolve(data), false);
+	}
+	
+	#[test]
+	fn eval_resolve_distributivity_and_or_011() {
 		let data: u32 = 0b011u32;
 		let p = parser::ParserA::new("AB&C|");
         assert_eq!(p.resolve(data), true);
 	}
 
 	#[test]
-	fn eval_resolve_distributy_and_or_neg_011() {
+	fn eval_resolve_distributivity_and_or_neg_011() {
 		let data: u32 = 0b011u32;
 		let p = parser::ParserA::new("AB|C&!");
         assert_eq!(p.resolve(data), true);
 	}
-
-	// PARSING TESTS
+	
 	#[test]
-	#[should_panic]
-	fn parsing_bad_char() {
-		let _p = parser::ParserA::new("-");
-	}
-
-	#[test]
-	#[should_panic]
-	fn parsing_bad_char1() {
-		let _p = parser::ParserA::new("10|");
-	}
-
-	#[test]
-	#[should_panic]
-	fn parsing_no_op1() {
-		let _p = parser::ParserA::new("AAAA");
-	}
-
-	#[test]
-	#[should_panic]
-	fn parsing_no_v() {
-		let _p = parser::ParserA::new("&&");
+	fn eval_resolve_distributivity_cnf_and_or_neg_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("A!B!&C!|");
+        assert_eq!(p.resolve(data), true);
 	}
 	
 	#[test]
-	#[should_panic]
-	fn parsing_no_v1() {
-		let _p = parser::ParserA::new("!");
+	fn eval_resolve_distributivity_cnf_or_or_or_0011() {
+		let data: u32 = 0b0011u32;
+		let p = parser::ParserA::new("ABCD|||");
+        assert_eq!(p.resolve(data), true);
 	}
-
+	
 	#[test]
-	#[should_panic]
-	fn parsing_bad_formula() {
-		let _p = parser::ParserA::new("A!B!");
+	fn eval_resolve_distributivity_cnf_and_and_and_1011() {
+		let data: u32 = 0b1011u32;
+		let p = parser::ParserA::new("ABCD&&&");
+        assert_eq!(p.resolve(data), false);
 	}
-
+	
 	#[test]
-	#[should_panic]
-	fn parsing_bad_formula1() {
-		let _p = parser::ParserA::new("AB|||");
+	fn eval_resolve_distributivity_cnf_neg_neg_neg_or_or_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("A!B!C!||");
+        assert_eq!(p.resolve(data), true);
 	}
-
+	
+	#[test]
+	fn eval_resolve_distributivity_cnf_neg_neg_neg_and_and_011() {
+		let data: u32 = 0b011u32;
+		let p = parser::ParserA::new("A!B!C!&&");
+        assert_eq!(p.resolve(data), false);
+	}
+	
 	// NNF FORM
 	#[test]
 	fn eval_no_op() {
@@ -505,18 +511,18 @@ mod tests {
 
 	// CNF FORM
 	#[test]
-	fn eval_distributy_0() {
+	fn eval_distributivity_0() {
 		assert_eq!(conjunctive_normal_form("AB|C&"), "CA&CB&|");
 	}
 
 	#[test]
-	fn eval_distributy_1() {
+	fn eval_distributivity_1() {
 		assert_eq!(conjunctive_normal_form("AB&C|"), "CA|CB|&");
 	}
 
 	#[test]
-	fn eval_distributy_2() {
-		assert_eq!(conjunctive_normal_form("AB|C&!"), "A!B!&C!|");
+	fn eval_distributivity_2() {
+		assert_eq!(conjunctive_normal_form("AB|C&!"), "C!A!|C!B!|&");
 	}
 
 	#[test]
@@ -537,9 +543,59 @@ mod tests {
 	fn eval_or_neg_neg_and() {
 		assert_eq!(conjunctive_normal_form("AB|!C!&"), "A!B!C!&&");
 	}
+	
+	// PARSING TESTS
+	#[test]
+	#[should_panic]
+	fn parsing_bad_char() {
+		let _p = parser::ParserA::new("-");
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_char1() {
+		let _p = parser::ParserA::new("10|");
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_no_op1() {
+		let _p = parser::ParserA::new("AAAA");
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_no_v() {
+		let _p = parser::ParserA::new("&&");
+	}
+	
+	#[test]
+	#[should_panic]
+	fn parsing_no_v1() {
+		let _p = parser::ParserA::new("!");
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_formula() {
+		let _p = parser::ParserA::new("A!B!");
+	}
+
+	#[test]
+	#[should_panic]
+	fn parsing_bad_formula1() {
+		let _p = parser::ParserA::new("AB|||");
+	}
+
 }
 
 fn main() {
-	let formula = "AB>";
-	println!("result: {}\n", conjunctive_normal_form(formula));
+	let formula = "AB|C&!"; 
+
+	// need to push all the operators at the end
+	// let formula = "AB|!C!&";
+	// let formula = "AB&!C!|";
+	// let formula = "AB|C|D|";
+	// let formula = "AB&C&D&";
+	println!("result: {} == 'A!B!&C!|'\n", conjunctive_normal_form(formula));
 }

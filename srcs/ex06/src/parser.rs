@@ -9,7 +9,7 @@ use pest::Parser;
 pub struct FormulaParser;
 
 use crate::binary_tree::{
-    and_node, equal_node, id_node, imply_node, negation_node, or_node, xor_node, BinaryTree, BtNode,
+    and_node, equal_node, id_node, imply_node, negation_node, or_node, xor_node, apply_distributivity, BinaryTree, BtNode,
 };
 
 pub struct ParserA {
@@ -65,7 +65,7 @@ impl ParserA {
         println!("formula = {}", raw_str);
         let mut stack = Vec::<BtNode<u8>>::new();
         let pairs = FormulaParser::parse(Rule::formula, raw_str)
-            .unwrap_or_else(|e| panic!("Error during parsing: {:?}", e));
+            .unwrap_or_else(|e| panic!("Error: during parsing: {:?}", e));
 
         for pair in pairs {
             for inner_pair in pair.into_inner() {
@@ -73,13 +73,13 @@ impl ParserA {
                     Rule::var => id_node(inner_pair.as_str().as_bytes()[0] - 65),
                     Rule::operators => ParserA::get_operator_node(inner_pair, &mut stack),
                     Rule::EOI => break,
-                    _ => panic!("Error token not accepted: {:#?}", inner_pair),
+                    _ => panic!("Error: token not accepted: {:#?}", inner_pair),
                 };
                 stack.push(tmp);
             }
         }
         assert!(stack.len() == 1);
-        BinaryTree::new(stack.pop().unwrap())
+        BinaryTree::new(apply_distributivity(stack.pop()).unwrap())
     }
 
     pub fn new(raw_str: &str) -> Self {

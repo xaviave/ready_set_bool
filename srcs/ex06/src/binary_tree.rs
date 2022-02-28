@@ -28,7 +28,7 @@ impl BtNode<u8> {
     }
     fn get_left_node(&self) -> Option<BtNode<u8>> {
         match self.op {
-            Op::And | Op::Or => Some(*(self.right.clone().unwrap())),
+            Op::And | Op::Or => Some(*(self.left.clone().unwrap())),
             _ => Some(self.clone()),
         }
     }
@@ -95,54 +95,11 @@ impl BinaryTree<u8> {
     }
 }
 
-fn check_distributivity(op: Op<u8>, node: Option<BtNode<u8>>) -> bool {
-    if let Some(n) = node {
-        match n.op {
-            Op::IdNode(T) => false,
-            _ => op != n.op,
-        }
-    } else {
-        panic!("Null node")
-    }
-}
-
 pub fn and_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    // let d1 = check_distributivity(Op::And, l.clone());
-    // let d2 = check_distributivity(Op::And, r.clone());
-
     BtNode::new(Op::And, l, r, false)
-
-    // if d1 && !d2 {
-    //     if let Some(n) = r {
-    //         println!("right = {n:?}");
-    //         BtNode::new(
-    //             Op::Or,
-    //             Some(BtNode::new(Op::And, l.clone(), n.get_left_node(), false)),
-    //             Some(BtNode::new(Op::And, l, n.get_right_node(), false)),
-    //             false,
-    //         )
-    //     } else {
-    //         panic!("")
-    //     }
-    // } else if d2 && !d1 {
-    //     if let Some(n) = l {
-    //         println!("left = {n:?}");
-    //         BtNode::new(
-    //             Op::Or,
-    //             Some(BtNode::new(Op::And, r.clone(), n.get_left_node(), false)),
-    //             Some(BtNode::new(Op::And, r, n.get_left_node(), false)),
-    //             false,
-    //         )
-    //     } else {
-    //         panic!("")
-    //     }
-    // } else {
-    //     BtNode::new(Op::And, l, r, false)
-    // }
 }
 
 pub fn or_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    // check_distributivity(Op::Or, l, r)
     BtNode::new(Op::Or, l, r, false)
 }
 
@@ -179,10 +136,10 @@ pub fn negation_node(node: Option<BtNode<u8>>) -> BtNode<u8> {
                 match n.op {
                     Op::And => Op::Or,
                     Op::Or => Op::And,
-                    _ => n.op,
+                    _ => n.op.clone(),
                 },
-                Some(negation_node(Some(*(n.left.unwrap())))),
-                Some(negation_node(Some(*(n.right.unwrap())))),
+                Some(negation_node(n.get_left_node())),
+                Some(negation_node(n.get_right_node())),
                 n.neg,
             )
         } else {
@@ -204,5 +161,124 @@ pub fn id_node(value: u8) -> BtNode<u8> {
         left: None,
         right: None,
         neg: false,
+    }
+}
+
+pub fn distributivity_and(d: bool, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
+    if d {
+        if let Some(n) = l {
+            BtNode::new(
+                Op::Or,
+                Some(BtNode::new(Op::And, r.clone(), n.get_left_node(), false)),
+                Some(BtNode::new(Op::And, r, n.get_right_node(), false)),
+                false,
+            )
+        } else {
+            panic!("Null Node error")
+        }
+    } else {
+        if let Some(n) = r {
+            BtNode::new(
+                Op::Or,
+                Some(BtNode::new(Op::And, l.clone(), n.get_left_node(), false)),
+                Some(BtNode::new(Op::And, l, n.get_left_node(), false)),
+                false,
+            )
+        } else {
+            panic!("Null Node error")
+        }
+    }
+}
+
+pub fn distributivity_or(d: bool, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
+    if d {
+        if let Some(n) = l {
+            BtNode::new(
+                Op::And,
+                Some(BtNode::new(Op::Or, r.clone(), n.get_left_node(), false)),
+                Some(BtNode::new(Op::Or, r, n.get_right_node(), false)),
+                false,
+            )
+        } else {
+            panic!("Null Node error")
+        }
+    } else {
+        if let Some(n) = r {
+            BtNode::new(
+                Op::And,
+                Some(BtNode::new(Op::Or, l.clone(), n.get_left_node(), false)),
+                Some(BtNode::new(Op::Or, l, n.get_left_node(), false)),
+                false,
+            )
+        } else {
+            panic!("Null Node error")
+        }
+    }
+}
+
+fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> (bool, bool) {
+    fn _check_distributivity(op: Op<u8>, node: Option<BtNode<u8>>) -> bool {
+        if let Some(n) = node {
+            match n.op {
+                Op::IdNode(_) => false,
+                _ => op != n.op,
+            }
+        } else {
+            panic!("Null node")
+        }
+    }
+    let d1: bool = _check_distributivity(op.clone(), l);
+    let d2: bool = _check_distributivity(op, r);
+    if (d1 && !d2) || (!d1 && d2) {
+        (true, d1)
+    } else {
+        (false, false)
+    }
+}
+
+pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> {
+    // recursively capply distributivity law after de morgan's law and negation's one
+    let d: (bool, bool);
+
+    if let Some(n) = node.clone() {
+        match n.op {
+            Op::And => {
+                d = check_distributivity(
+                    Op::And,
+                    n.get_left_node().clone(),
+                    n.get_right_node().clone(),
+                );
+                if d.0 {
+                    node = Some(distributivity_and(
+                        d.1,
+                        n.get_left_node(),
+                        n.get_right_node(),
+                    ));
+                }
+                apply_distributivity(n.get_left_node().clone());
+                apply_distributivity(n.get_right_node().clone());
+                node
+            }
+            Op::Or => {
+                d = check_distributivity(
+                    Op::Or,
+                    n.get_left_node().clone(),
+                    n.get_right_node().clone(),
+                );
+                if d.0 {
+                    node = Some(distributivity_or(
+                        d.1,
+                        n.get_left_node(),
+                        n.get_right_node(),
+                    ));
+                }
+                apply_distributivity(n.get_left_node().clone());
+                apply_distributivity(n.get_right_node().clone());
+                node
+            }
+            _ => node,
+        }
+    } else {
+        panic!("Null node");
     }
 }
