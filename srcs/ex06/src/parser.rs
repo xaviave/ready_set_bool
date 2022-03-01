@@ -62,7 +62,6 @@ impl ParserA {
     }
 
     fn parse_raw(raw_str: &str) -> BinaryTree<u8> {
-        println!("formula = {}", raw_str);
         let mut stack = Vec::<BtNode<u8>>::new();
         let pairs = FormulaParser::parse(Rule::formula, raw_str)
             .unwrap_or_else(|e| panic!("Error: during parsing: {:?}", e));

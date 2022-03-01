@@ -511,6 +511,21 @@ mod tests {
 
 	// CNF FORM
 	#[test]
+	fn eval_absorption_0() {
+		assert_eq!(conjunctive_normal_form("AB|A&"), "A");
+	}
+	
+	#[test]
+	fn eval_absorption_1() {
+		assert_eq!(conjunctive_normal_form("AC&C|"), "C");
+	}
+
+	#[test]
+	fn eval_absorption_2() {
+		assert_eq!(conjunctive_normal_form("AB|B&C|"), "BC|");
+	}
+	
+	#[test]
 	fn eval_distributivity_0() {
 		assert_eq!(conjunctive_normal_form("AB|C&"), "CA&CB&|");
 	}
@@ -586,16 +601,13 @@ mod tests {
 	fn parsing_bad_formula1() {
 		let _p = parser::ParserA::new("AB|||");
 	}
-
 }
 
 fn main() {
-	let formula = "AB|C&!"; 
-
 	// need to push all the operators at the end
 	// let formula = "AB|!C!&";
 	// let formula = "AB&!C!|";
 	// let formula = "AB|C|D|";
-	// let formula = "AB&C&D&";
-	println!("result: {} == 'A!B!&C!|'\n", conjunctive_normal_form(formula));
+	let formula = "AB&C&D&";
+	println!("formula: {formula} | result: '{}'", conjunctive_normal_form(formula));
 }

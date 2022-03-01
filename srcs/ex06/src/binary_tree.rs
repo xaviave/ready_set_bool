@@ -7,7 +7,7 @@ pub enum Op<T> {
     IdNode(T),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct BtNode<T> {
     op: Op<T>,
     neg: bool,
@@ -95,12 +95,46 @@ impl BinaryTree<u8> {
     }
 }
 
+fn check_absorption(left: Option<BtNode<u8>>, right: Option<BtNode<u8>>, op: Op<u8>) -> BtNode<u8> {
+    // check absoption, allow formula simplification
+    fn _check_absorption(node: BtNode<u8>, node1: Option<BtNode<u8>>) -> bool {
+        if let Some(n1) = node1 {
+            node == n1
+        } else {
+            panic!("Null node")
+        }
+    }
+
+    let d: (bool, bool) = check_distributivity(op.clone(), left.clone(), right.clone());
+    if d.0 {
+        if let Some(l) = left.clone() {
+            if let Some(r) = right.clone() {
+                if _check_absorption(l.clone(), r.get_left_node())
+                    || _check_absorption(l.clone(), r.get_right_node())
+                    || _check_absorption(r.clone(), l.get_left_node())
+                    || _check_absorption(r.clone(), l.get_right_node())
+                {
+                    return if d.1 { r } else { l };
+                } else {
+                }
+            } else {
+                panic!("Null Node");
+            }
+        } else {
+            panic!("Null Node");
+        }
+    }
+    BtNode::new(op, left, right, false)
+}
+
 pub fn and_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::And, l, r, false)
+    // return simplified node or the original AND node
+    check_absorption(l, r, Op::And)
 }
 
 pub fn or_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
-    BtNode::new(Op::Or, l, r, false)
+    // return simplified node or the original OR node
+    check_absorption(l, r, Op::Or)
 }
 
 pub fn xor_node(l: Option<BtNode<u8>>, r: Option<BtNode<u8>>) -> BtNode<u8> {
@@ -239,6 +273,11 @@ fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>
 pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> {
     // recursively capply distributivity law after de morgan's law and negation's one
     let d: (bool, bool);
+    // println!(
+    //     "{:#?}\n{}",
+    //     node.clone(),
+    //     BinaryTree::collapse_printer(&(node.clone().unwrap()))
+    // );
 
     if let Some(n) = node.clone() {
         match n.op {
