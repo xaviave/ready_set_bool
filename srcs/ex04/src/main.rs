@@ -25,11 +25,8 @@ fn get_data_value(p: &parser::Parser, nu_sol: i32, a: i32) -> u32 {
 
 fn eval_formula(formula: &str) {
 	let p = parser::Parser::new(formula);
+	let nu_sol: i32 = (2 as i32).pow(p.vars.len() as u32) as i32;
 
-	let mut nu_sol: i32 = p.vars.len().pow(2) as i32;
-	if nu_sol == 1 {
-		nu_sol += 1;
-	}
 	println!(
 		"| {} | = |\n|-{}-|",
 		join(&p.vars, " | "),
