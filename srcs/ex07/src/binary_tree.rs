@@ -61,6 +61,7 @@ impl BinaryTree<u8> {
         fn is_same_operator(s1: String, s2: String) -> bool {
             s1.chars().next().unwrap() == s2.chars().next().unwrap()
         }
+        println!("l = {l:?} -- r = {r:?} -- {tmp}");
 
         if !is_operator(tmp.clone()) {
             return (format!("{}{}", tmp, neg), "".to_string());
@@ -80,6 +81,7 @@ impl BinaryTree<u8> {
                 format!("{}{}{tmp}", l.1, r.1),
             );
         } else if is_operator(l.1.clone()) || is_operator(r.1.clone()) {
+            println!("a l = {l:?} -- r = {r:?} -- {tmp}");
             return (format!("{}{}{}{}{}", l.0, l.1, r.0, r.1, neg), tmp);
         }
         (format!("{}{}{}{}", l.0, r.0, tmp, neg), "".to_string())
@@ -288,8 +290,8 @@ fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>
 pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> {
     // recursively capply distributivity law after de morgan's law and negation's one
     let d: (bool, bool);
-
     if let Some(n) = node.clone() {
+        println!("{:?}", n.op);
         match n.op {
             Op::And => {
                 //  dont apply distributivity over Op::And
@@ -306,6 +308,7 @@ pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> 
                     n.get_left_node().clone(),
                     n.get_right_node().clone(),
                 );
+                println!("{d:?}");
                 if d.0 {
                     node = Some(distributivity_or(
                         d.1,
