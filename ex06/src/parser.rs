@@ -92,6 +92,7 @@ impl ParserA {
         }
     }
 
+    #[allow(dead_code)]
     pub fn resolve(&self, data: u32) -> bool {
         BinaryTree::collapse(&self.bt.head, data)
     }

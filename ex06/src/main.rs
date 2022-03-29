@@ -546,7 +546,7 @@ mod tests {
 	}
 	#[test]
 	fn eval_and_or_and() {
-		assert_eq!(conjunctive_normal_form("AB&CD|&"), "AB&CD|&");
+		assert_eq!(conjunctive_normal_form("AB&CD|&"), "ABCD|&&");
 	}
 
 	#[test]
@@ -602,7 +602,7 @@ mod tests {
 }
 
 fn main() {
-	let formula = "ABCD&|&";
+	let formula = "AB&CD|E&&";
 
 	println!("{}", conjunctive_normal_form(formula));
 }

@@ -54,18 +54,6 @@ mod tests {
 	fn test_bad_sum_1() {
 		assert_eq!(adder(1, 0), 0);
 	}
-
-	#[test]
-    #[should_panic]
-	fn test_bad_sum_2() {
-		assert_eq!(adder(1, 11110), 2470);
-	}
-
-	// #[test]
-	// #[should_panic]
-	// fn test_bad_sign() {
-	// 	assert_eq!(adder(-1110, 1110), 0);
-	// }
 }
 
 fn main() {

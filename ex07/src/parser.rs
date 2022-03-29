@@ -95,9 +95,4 @@ impl ParserA {
     pub fn resolve(&self, data: u32) -> bool {
         BinaryTree::collapse(&self.bt.head, data)
     }
-
-    pub fn get_cnf(&self) -> String {
-        let x = BinaryTree::collapse_printer(&self.bt.head);
-        format!("{}{}", x.0, x.1)
-    }
 }

@@ -5,12 +5,6 @@ mod parser;
 #[macro_use]
 extern crate pest_derive;
 
-fn conjunctive_normal_form(formula: &str) -> String {
-	// miss distributivity and neg at the end
-	let p = parser::ParserA::new(formula);
-	p.get_cnf()
-}
-
 fn get_data_value(p: &parser::ParserA, nu_sol: i32, a: i32) -> u32 {
 	let mut m: i32 = 1;
 	let mut data: u32 = 0;
@@ -43,8 +37,6 @@ fn sat(formula: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-
 	use super::*;
 
 	#[test]

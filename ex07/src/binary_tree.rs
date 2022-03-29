@@ -48,72 +48,6 @@ impl BinaryTree<u8> {
         BinaryTree::<u8> { head }
     }
 
-    fn associability_printer(
-        mut l: (String, String),
-        mut r: (String, String),
-        tmp: String,
-        neg: String,
-    ) -> (String, String) {
-        fn is_operator(s: String) -> bool {
-            s.contains("&") || s.contains("|")
-        }
-
-        fn is_same_operator(s1: String, s2: String) -> bool {
-            s1.chars().next().unwrap() == s2.chars().next().unwrap()
-        }
-        println!("l = {l:?} -- r = {r:?} -- {tmp}");
-
-        if !is_operator(tmp.clone()) {
-            return (format!("{}{}", tmp, neg), "".to_string());
-        } else if (!is_operator(l.1.clone()) && !is_operator(r.1.clone()))
-            || (l.1.len() > 0 && is_same_operator(tmp.clone(), l.1.clone()))
-            || (r.1.len() > 0 && is_same_operator(tmp.clone(), r.1.clone()))
-        {
-            if l.1.len() > 0 && !is_same_operator(tmp.clone(), l.1.clone()) {
-                l = (format!("{}{}", l.0, l.1), "".to_string());
-            }
-            if r.1.len() > 0 && !is_same_operator(tmp.clone(), r.1.clone()) {
-                l = (format!("{}{}", l.0, l.1), "".to_string());
-                r = (format!("{}{}", r.0, r.1), "".to_string());
-            }
-            return (
-                format!("{}{}{}", l.0, r.0, neg),
-                format!("{}{}{tmp}", l.1, r.1),
-            );
-        } else if is_operator(l.1.clone()) || is_operator(r.1.clone()) {
-            println!("a l = {l:?} -- r = {r:?} -- {tmp}");
-            return (format!("{}{}{}{}{}", l.0, l.1, r.0, r.1, neg), tmp);
-        }
-        (format!("{}{}{}{}", l.0, r.0, tmp, neg), "".to_string())
-    }
-
-    pub fn collapse_printer(node: &BtNode<u8>) -> (String, String) {
-        let mut r = ("".to_string(), "".to_string());
-        let mut l = ("".to_string(), "".to_string());
-
-        if let Some(left) = &node.left {
-            l = BinaryTree::collapse_printer(left);
-        }
-
-        if let Some(right) = &node.right {
-            r = BinaryTree::collapse_printer(right);
-        }
-
-        BinaryTree::associability_printer(
-            l,
-            r,
-            match node.op {
-                Op::And => "&".to_string(),
-                Op::Or => "|".to_string(),
-                Op::IdNode(x) => ((x + 65) as char).to_string(),
-            },
-            match node.neg {
-                true => "!".to_string(),
-                false => "".to_string(),
-            },
-        )
-    }
-
     pub fn collapse(node: &BtNode<u8>, data: u32) -> bool {
         let mut r: bool = false;
         let mut l: bool = false;
@@ -291,7 +225,6 @@ pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> 
     // recursively capply distributivity law after de morgan's law and negation's one
     let d: (bool, bool);
     if let Some(n) = node.clone() {
-        println!("{:?}", n.op);
         match n.op {
             Op::And => {
                 //  dont apply distributivity over Op::And
@@ -308,7 +241,6 @@ pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> 
                     n.get_left_node().clone(),
                     n.get_right_node().clone(),
                 );
-                println!("{d:?}");
                 if d.0 {
                     node = Some(distributivity_or(
                         d.1,

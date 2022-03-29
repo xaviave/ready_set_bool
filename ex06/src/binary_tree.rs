@@ -71,8 +71,8 @@ impl BinaryTree<u8> {
             if l.1.len() > 0 && !is_same_operator(tmp.clone(), l.1.clone()) {
                 l = (format!("{}{}", l.0, l.1), "".to_string());
             }
-            if r.1.len() > 0 && !is_same_operator(tmp.clone(), r.1.clone()) {
-                l = (format!("{}{}", l.0, l.1), "".to_string());
+            else if r.1.len() > 0 && !is_same_operator(tmp.clone(), r.1.clone()) {
+                l = (format!("{}", l.0), l.1);
                 r = (format!("{}{}", r.0, r.1), "".to_string());
             }
             return (
@@ -112,6 +112,7 @@ impl BinaryTree<u8> {
         )
     }
 
+    #[allow(dead_code)]
     pub fn collapse(node: &BtNode<u8>, data: u32) -> bool {
         let mut r: bool = false;
         let mut l: bool = false;
@@ -286,7 +287,7 @@ fn check_distributivity(op: Op<u8>, l: Option<BtNode<u8>>, r: Option<BtNode<u8>>
 }
 
 pub fn apply_distributivity(mut node: Option<BtNode<u8>>) -> Option<BtNode<u8>> {
-    // recursively capply distributivity law after de morgan's law and negation's one
+    // recursively apply distributivity law over `or` after de morgan's law and negation's one
     let d: (bool, bool);
 
     if let Some(n) = node.clone() {
